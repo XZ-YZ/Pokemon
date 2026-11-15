@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pokemon Encyclopedia</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #10145c;
+    font-family: Arial, sans-serif;
+    color: white;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 30px 10px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.carousel {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 35px 0;
+}
+
+.track {
+    display: flex;
+    align-items: center;
+    transition: transform 0.5s ease;
+}
+
+.slide {
+    flex: 0 0 20%;
+    text-align: center;
+    opacity: 0.3;
+    transform: scale(0.65);
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.slide.active {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.slide img {
+    width: 100%;
+    max-width: 150px;
+    height: 130px;
+    object-fit: contain;
+}
+
+.slide p {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: gray;
+    cursor: pointer;
+}
+
+.dot.active {
+    background: white;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.info {
+    background: #202b83;
+    margin-top: 40px;
+    padding: 25px;
+    border-radius: 18px;
+    display: none;
+    animation: muncul 0.4s ease;
+}
+
+.info h2 {
+    color: #ffd84d;
+    margin-bottom: 15px;
+}
+
+.info p {
+    line-height: 1.7;
+    margin-bottom: 8px;
+}
+
+.info .type {
+    display: inline-block;
+    background: #3949ab;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+}
+
+.info button {
+    margin-top: 15px;
+    background: #ffd84d;
+    color: #10145c;
+}
+
+@keyframes muncul {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚡ POKÉMON ENCYCLOPEDIA</h1>
+
+<div class="carousel" id="carousel">
+
+<div class="track" id="track">
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png">
+<p>Pikachu</p>
+</div>
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png">
+<p>Charmander</p>
+</div>
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/183.png">
+<p>Marill</p>
+</div>
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/134.png">
+<p>Vaporeon</p>
+</div>
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png">
+<p>Mew</p>
+</div>
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png">
+<p>Bulbasaur</p>
+</div>
+
+<div class="slide">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png">
+<p>Squirtle</p>
+</div>
+
+</div>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="buttons">
+
+<button onclick="prev()">❮</button>
+
+<button onclick="next()">❯</button>
+
+</div>
+
+<!-- PANEL INFORMASI -->
+
+<div class="info" id="info">
+
+<h2 id="pokemonName"></h2>
+
+<div class="type" id="pokemonType"></div>
+
+<p id="pokemonDesc"></p>
+
+<p id="pokemonAbility"></p>
+
+<button onclick="closeInfo()">Tutup Informasi</button>
+
+</div>
+
+</div>
+
+<script>
+
+const track = document.getElementById("track");
+
+const slides = document.querySelectorAll(".slide");
+
+const dotsContainer = document.getElementById("dots");
+
+const carousel = document.getElementById("carousel");
+
+let current = 0;
+
+let timer;
+
+// DATA POKEMON
+
+const pokemon = [
+
+{
+name: "Pikachu ⚡",
+type: "Electric",
+desc: "Pokémon tikus yang menyimpan energi listrik di pipinya. Pikachu dapat menghasilkan serangan listrik yang kuat.",
+ability: "Kemampuan: Static."
+},
+
+{
+name: "Charmander 🔥",
+type: "Fire",
+desc: "Pokémon kadal api. Ujung ekornya memiliki nyala api yang menjadi ciri khasnya.",
+ability: "Kemampuan: Blaze."
+},
+
+{
+name: "Marill 💧",
+type: "Water / Fairy",
+desc: "Pokémon tikus air dengan ekor bulat yang membantunya mengapung di air.",
+ability: "Kemampuan: Huge Power, Thick Fat."
+},
+
+{
+name: "Vaporeon 🌊",
+type: "Water",
+desc: "Pokémon yang memiliki kemampuan beradaptasi dengan lingkungan air. Tubuhnya dapat menyatu dengan air.",
+ability: "Kemampuan: Water Absorb, Hydration."
+},
+
+{
+name: "Mew 🧬",
+type: "Psychic",
+desc: "Pokémon misterius yang memiliki DNA dari berbagai Pokémon. Mew dikenal sangat langka dan memiliki kemampuan mempelajari banyak jurus.",
+ability: "Kemampuan: Synchronize."
+},
+
+{
+name: "Bulbasaur 🌱",
+type: "Grass / Poison",
+desc: "Pokémon yang memiliki biji tanaman di punggungnya. Biji tersebut tumbuh dan berkembang seiring waktu.",
+ability: "Kemampuan: Overgrow, Chlorophyll."
+},
+
+{
+name: "Squirtle 💦",
+type: "Water",
+desc: "Pokémon kura-kura yang dapat menyemprotkan air dari mulutnya. Cangkangnya membantu melindungi tubuhnya.",
+ability: "Kemampuan: Torrent, Rain Dish."
+}
+
+];
+
+// MEMBUAT TITIK
+
+slides.forEach((slide, index) => {
+
+    const dot = document.createElement("div");
+
+    dot.className = "dot";
+
+    dot.onclick = () => {
+        current = index;
+        updateSlider();
+        restartTimer();
+    };
+
+    dotsContainer.appendChild(dot);
+
+    slide.onclick = () => {
+        showInfo(index);
+        current = index;
+        updateSlider();
+        restartTimer();
+    };
+
+});
+
+// UPDATE SLIDER
+
+function updateSlider() {
+
+    slides.forEach((slide, index) => {
+
+        slide.classList.toggle(
+            "active",
+            index === current
+        );
+
+    });
+
+    const active = slides[current];
+
+    const offset =
+        carousel.clientWidth / 2 -
+        active.offsetLeft -
+        active.clientWidth / 2;
+
+    track.style.transform =
+        `translateX(${offset}px)`;
+
+    document.querySelectorAll(".dot").forEach(
+        (dot, index) => {
+
+            dot.classList.toggle(
+                "active",
+                index === current
+            );
+
+        }
+    );
+
+}
+
+// INFORMASI POKEMON
+
+function showInfo(index) {
+
+    const data = pokemon[index];
+
+    document.getElementById("pokemonName").innerText =
+        data.name;
+
+    document.getElementById("pokemonType").innerText =
+        "Type: " + data.type;
+
+    document.getElementById("pokemonDesc").innerText =
+        data.desc;
+
+    document.getElementById("pokemonAbility").innerText =
+        data.ability;
+
+    document.getElementById("info").style.display =
+        "block";
+
+}
+
+// TUTUP INFORMASI
+
+function closeInfo() {
+
+    document.getElementById("info").style.display =
+        "none";
+
+}
+
+// NEXT
+
+function next() {
+
+    current = (current + 1) % slides.length;
+
+    updateSlider();
+
+}
+
+// PREVIOUS
+
+function prev() {
+
+    current =
+        (current - 1 + slides.length) % slides.length;
+
+    updateSlider();
+
+}
+
+// AUTOPLAY
+
+// SWIPE HP
+
+let startX = 0;
+
+carousel.addEventListener("touchstart", e => {
+
+    startX = e.touches[0].clientX;
+
+});
+
+carousel.addEventListener("touchend", e => {
+
+    let endX = e.changedTouches[0].clientX;
+
+    if (startX - endX > 50) {
+        next();
+        restartTimer();
+    }
+
+    if (endX - startX > 50) {
+        prev();
+        restartTimer();
+    }
+
+});
+
+// RESIZE
+
+window.addEventListener("resize", updateSlider);
+
+// JALANKAN
+
+updateSlider();
+function next() {
+    current = (current + 1) % slides.length;
+    updateSlider();
+}
+
+function prev() {
+    current = (current - 1 + slides.length) % slides.length;
+    updateSlider();
+}
+
+</script>
+
+</body>
+</html>
